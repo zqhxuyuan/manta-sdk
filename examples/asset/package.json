@@ -2,12 +2,11 @@
   "name": "manta-sdk",
   "version": "1.0.0",
   "description": "manta sdk",
-  "main": "index.ts",
+  "main": "index.js",
   "scripts": {
     "serve" : "webpack serve"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "html-webpack-plugin": "^5.3.2",
     "webpack": "^5.49.0",

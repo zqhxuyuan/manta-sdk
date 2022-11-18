@@ -12,14 +12,20 @@ const rpc = config.RPC;
 const types = config.TYPES;
 const DEFAULT_PULL_SIZE = config.DEFAULT_PULL_SIZE;
 const SIGNER_URL = config.SIGNER_URL;
-const CHAIN_URL = config.BLOCKCHAIN_URL_LOCAL;
 const PRIVATE_ASSET_PREFIX = "p"
 const NFT_AMOUNT = 1000000000000;
 
-// TODO: url, account as parameters
-export async function init_api() {
-    // Polkadot.js API
-    const provider = new WsProvider(CHAIN_URL);
+function env_url(env) {
+    var url = config.BLOCKCHAIN_URL_LOCAL;
+    if(env == "dev") {
+        url = config.BLOCKCHAIN_URL;
+    }
+    return url;
+}
+
+// Polkadot.js API with web3Extension
+export async function init_api(env) {
+    const provider = new WsProvider(env_url(env));
     const api = await ApiPromise.create({ provider, types, rpc });
     const [chain, nodeName, nodeVersion] = await Promise.all([
         api.rpc.system.chain(),
@@ -34,23 +40,18 @@ export async function init_api() {
     }
     const allAccounts = await web3Accounts();
     const account = allAccounts[0];
-    // console.log(JSON.stringify(account));
     const injector = await web3FromSource(account.meta.source);
     const signer = account.address;
     console.log("address:" + account.address);
-    // console.log("signer:" + injector.signer);
     api.setSigner(injector.signer)
-    const { nonce, data: balance } = await api.query.system.account(signer);
-    // console.log("balance:" + balance + ", nonce:" + nonce);
     return {
         api,
         signer
     };
 }
 
-export async function init_api_config(chain_url) {
-    // Polkadot.js API
-    const provider = new WsProvider(chain_url);
+export async function init_api_config(env) {
+    const provider = new WsProvider(env_url(env));
     const api = await ApiPromise.create({ provider, types, rpc });
     const [chain, nodeName, nodeVersion] = await Promise.all([
         api.rpc.system.chain(),
