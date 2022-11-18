@@ -1,4 +1,5 @@
 import * as sdk from '../../sdk/sdk';
+// import * as sdk_interface from '../../sdk/sdk.interfaces';
 
 const to_private_address = "64nmibscb1UdWGMWnRQAYx6hS4TA2iyFqiS897cFRWvNTmjad85p6yD9ud7cyVPhyNPDrSMs2eZxTfovxZbJdFqH";
 
@@ -22,5 +23,16 @@ async function main() {
   
     console.log("END");
 }
+
+// TRYING USING RETURN FUNCTION TO GET RID OF PASSING PARAMETERS
+// async function main2() {
+//     const { chain } = await sdk.init_chain("");
+//     await chain.private_address();
+    
+//     const { private_address, init_synchronize } = await sdk.init_chain("");
+//     await private_address();
+//     await init_synchronize();
+//     console.log("END");
+// }
 
 main()

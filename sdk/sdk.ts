@@ -1,12 +1,20 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { web3Accounts, web3Enable, web3FromSource } from '@polkadot/extension-dapp';
 import { base58Decode, base58Encode } from '@polkadot/util-crypto';
+
+import { web3Accounts, web3Enable, web3FromSource } from '@polkadot/extension-dapp';
+
 import Api, { ApiConfig } from 'manta-wasm-wallet-api';
+// import { Api, ApiConfig } from '../api';
 
 import * as axios from 'axios';
+// import { default as axios } from 'axios';
+
 import BN from 'bn.js';
 
+import {Sdk} from './sdk.interfaces';
+
 import config from './manta-config.json';
+import { async } from 'rxjs';
 
 const rpc = config.RPC;
 const types = config.TYPES;
@@ -61,6 +69,36 @@ export async function init_api_config(env) {
     console.log(`You are connected to chain ${chain} using ${nodeName} v${nodeVersion}`);
     return api;
 }
+
+// THIS WILL BE GOOD, BUT DOESN'T WORK
+// export async function init_chain(env): Promise<Sdk> {
+//     const {api, signer} = await init_api(env);
+//     const {wasm, wasmWallet} = await init_wasm_sdk(api, signer);
+//     return {
+//         private_address: async(): Promise<void> => {
+//             await getPrivateAddress(wasm, wasmWallet);
+//         },
+//         init_synchronize: async(): Promise<void> => {
+//             await init_sync(wasmWallet);
+//         },
+//     }
+// }
+
+// async function init_sdk(env): Promise<Sdk> {
+//     const {api, signer} = await init_api(env);
+//     const {wasm, wasmWallet} = await init_wasm_sdk(api, signer);
+//     return {
+//         private_address: async(): Promise<void> => {
+//             await getPrivateAddress(wasm, wasmWallet);
+//         },
+//         init_synchronize: async() => {
+//             return init_sync(wasmWallet);
+//         },
+//         to_private_call: async(asset_id, amount) => {
+//             return to_private2(api, signer, wasm, wasmWallet, asset_id, amount);
+//         }
+//     }
+// }
 
 export async function init_wasm_sdk(api, signer) {
     const wasm = await import('manta-wasm-wallet');
