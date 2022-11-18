@@ -11,10 +11,7 @@ import * as axios from 'axios';
 
 import BN from 'bn.js';
 
-import {Sdk} from './sdk.interfaces';
-
 import config from './manta-config.json';
-import { async } from 'rxjs';
 
 const rpc = config.RPC;
 const types = config.TYPES;
@@ -42,6 +39,7 @@ export async function init_api(env) {
     ]);
     console.log(`You are connected to chain ${chain} using ${nodeName} v${nodeVersion}`);
 
+    // TODO: Better handling signer
     const extensions = await web3Enable('Polkadot App');
     if (extensions.length === 0) {
         return;
@@ -70,35 +68,32 @@ export async function init_api_config(env) {
     return api;
 }
 
-// THIS WILL BE GOOD, BUT DOESN'T WORK
-// export async function init_chain(env): Promise<Sdk> {
-//     const {api, signer} = await init_api(env);
-//     const {wasm, wasmWallet} = await init_wasm_sdk(api, signer);
-//     return {
-//         private_address: async(): Promise<void> => {
-//             await getPrivateAddress(wasm, wasmWallet);
-//         },
-//         init_synchronize: async(): Promise<void> => {
-//             await init_sync(wasmWallet);
-//         },
-//     }
-// }
+// Compile error: Module parse failed: Unexpected token .... => :SDK or : Promise<Sdk>
+// You may need an appropriate loader to handle this file type, currently no loaders are configured to process this file. See https://webpack.js.org/concepts#loaders
+// import {SDK, Sdk} from './sdk.interfaces';
+// export function init_chain(env): SDK
+// async function init_sdk(env): Promise<Sdk>
 
-// async function init_sdk(env): Promise<Sdk> {
-//     const {api, signer} = await init_api(env);
-//     const {wasm, wasmWallet} = await init_wasm_sdk(api, signer);
-//     return {
-//         private_address: async(): Promise<void> => {
-//             await getPrivateAddress(wasm, wasmWallet);
-//         },
-//         init_synchronize: async() => {
-//             return init_sync(wasmWallet);
-//         },
-//         to_private_call: async(asset_id, amount) => {
-//             return to_private2(api, signer, wasm, wasmWallet, asset_id, amount);
-//         }
-//     }
-// }
+// Compile ok, but not works
+// TypeError: sdks.private_address is not a function
+export function init_chain(env) {
+    return {
+        sdks: init_sdk(env)
+    }
+}
+
+async function init_sdk(env) {
+    const {api, signer} = await init_api(env);
+    const {wasm, wasmWallet} = await init_wasm_sdk(api, signer);
+    return {
+        private_address: async() => {
+            await getPrivateAddress(wasm, wasmWallet);
+        },
+        init_synchronize: async() => {
+            await init_sync(wasmWallet);
+        },
+    }
+}
 
 export async function init_wasm_sdk(api, signer) {
     const wasm = await import('manta-wasm-wallet');

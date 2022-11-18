@@ -3,9 +3,8 @@
 // }
 
 // export type SdkType = Sdk;
-
 // export interface Sdk {
-//     private_address: () => Promise<void>;
-//     init_synchronize: () => Promise<void>;
+//     private_address: () => void;
+//     init_synchronize: () => void;
 // }
 
