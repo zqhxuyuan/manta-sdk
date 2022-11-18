@@ -179,7 +179,7 @@ export async function to_private2(api, signer, wasm, wasmWallet, asset_id, to_pr
     const txJson = `{ "Mint": { "id": ${asset_id}, "value": "${to_private_amount}" }}`;
     const transaction = wasm.Transaction.from_string(txJson);
     try {
-        await sign_and_send_no_metadata(api, signer, wasmWallet, transaction);
+        await sign_and_send(api, signer, wasmWallet, "", transaction);
         console.log("📜to_private done");
     } catch (error) {
         console.error('Transaction failed', error);
@@ -245,25 +245,13 @@ export async function to_public_nft(api, signer, wasm, wasmWallet, asset_id) {
 };
 
 const sign_and_send = async (api, signer, wasm, wasmWallet, assetMetadataJson, transaction) => {
-    const assetMetadata = wasm.AssetMetadata.from_string(assetMetadataJson);
-    const posts = await wasmWallet.sign(transaction, assetMetadata);
-    const transactions = [];
-    for (let i = 0; i < posts.length; i++) {
-        const transaction = await mapPostToTransaction(posts[i], api);
-        transactions.push(transaction);
+    var posts = [];
+    if(assetMetadataJson == "") {
+        posts = await wasmWallet.sign(transaction, null);
+    } else {
+        const assetMetadata = wasm.AssetMetadata.from_string(assetMetadataJson);
+        posts = await wasmWallet.sign(transaction, assetMetadata);
     }
-    const txs = await transactionsToBatches(transactions, api);
-    for (let i = 0; i < txs.length; i++) {
-        try {
-            await txs[i].signAndSend(signer, (status, events) => { });
-        } catch (error) {
-            console.error('Transaction failed', error);
-        }
-    }
-}
-
-const sign_and_send_no_metadata = async (api, signer, wasmWallet, transaction) => {
-    const posts = await wasmWallet.sign(transaction, null);
     const transactions = [];
     for (let i = 0; i < posts.length; i++) {
         const transaction = await mapPostToTransaction(posts[i], api);
