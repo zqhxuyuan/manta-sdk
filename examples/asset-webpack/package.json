@@ -7,6 +7,7 @@
     "serve" : "webpack serve"
   },
   "dependencies": {
+    "manta.js": "file:../../sdk"
   },
   "devDependencies": {
     "html-webpack-plugin": "^5.3.2",

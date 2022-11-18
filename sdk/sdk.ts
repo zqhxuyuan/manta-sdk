@@ -1,25 +1,24 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { base58Decode, base58Encode } from '@polkadot/util-crypto';
-
+// TODO: remove this dependency with better signer integration
 import { web3Accounts, web3Enable, web3FromSource } from '@polkadot/extension-dapp';
 
 import Api, { ApiConfig } from 'manta-wasm-wallet-api';
-// import { Api, ApiConfig } from '../api';
-
 import * as axios from 'axios';
-// import { default as axios } from 'axios';
-
 import BN from 'bn.js';
-
 import config from './manta-config.json';
 
 const rpc = config.RPC;
 const types = config.TYPES;
 const DEFAULT_PULL_SIZE = config.DEFAULT_PULL_SIZE;
 const SIGNER_URL = config.SIGNER_URL;
+
+/// TODO: NFT stuff
 const PRIVATE_ASSET_PREFIX = "p"
 const NFT_AMOUNT = 1000000000000;
 
+/// Get blockchain connection url by env constant value
+// TODO: better env variable handling
 function env_url(env) {
     var url = config.BLOCKCHAIN_URL_LOCAL;
     if(env == "dev") {
@@ -28,7 +27,7 @@ function env_url(env) {
     return url;
 }
 
-// Polkadot.js API with web3Extension
+/// Polkadot.js API with web3Extension
 export async function init_api(env) {
     const provider = new WsProvider(env_url(env));
     const api = await ApiPromise.create({ provider, types, rpc });
@@ -81,7 +80,6 @@ export function init_chain(env) {
         sdks: init_sdk(env)
     }
 }
-
 async function init_sdk(env) {
     const {api, signer} = await init_api(env);
     const {wasm, wasmWallet} = await init_wasm_sdk(api, signer);
@@ -95,6 +93,7 @@ async function init_sdk(env) {
     }
 }
 
+/// Initialize wasm wallet sdk
 export async function init_wasm_sdk(api, signer) {
     const wasm = await import('manta-wasm-wallet');
     const wasmSigner = new wasm.Signer(SIGNER_URL);
@@ -110,6 +109,7 @@ export async function init_wasm_sdk(api, signer) {
     }
 }
 
+/// Get signer version
 export async function get_signer_version() {
     const version_res = await axios.get(`${SIGNER_URL}version`, {
         timeout: 1500
@@ -118,6 +118,7 @@ export async function get_signer_version() {
     console.log("signer version:" + signerVersion);
 }
 
+/// Get private address
 export async function getPrivateAddress(wasm, wallet) {
     const keys = await wallet.receiving_keys(
         new wasm.ReceivingKeyRequest('GetAll')
@@ -140,6 +141,7 @@ export function privateAddressToJson(privateAddress) {
     });
 };
 
+/// Initialize synchronization
 export async function init_sync(wasmWallet) {
     console.log('Beginning initial sync');
     const startTime = performance.now();
@@ -150,19 +152,8 @@ export async function init_sync(wasmWallet) {
     );
 }
 
-export async function sync_measure(wasmWallet, flag) {
-    if (!flag) {
-        await wasmWallet.sync();
-    } else {
-        console.log('Beginning sync');
-        const startTime2 = performance.now();
-        await wasmWallet.sync();
-        const endTime2 = performance.now();
-        console.log(`Sync finished in ${(endTime2 - startTime2) / 1000} seconds`);
-    }
-}
-
-export async function to_private(wasm, wasmWallet, asset_id, to_private_amount) {
+/// to_private transaction by post on wallet
+export async function to_private_by_post(wasm, wasmWallet, asset_id, to_private_amount) {
     console.log("to_private transaction...");
     const txJson = `{ "Mint": { "id": ${asset_id}, "value": "${to_private_amount}" }}`;
     const transaction = wasm.Transaction.from_string(txJson);
@@ -174,30 +165,35 @@ export async function to_private(wasm, wasmWallet, asset_id, to_private_amount) 
     }
 }
 
-export async function to_private2(api, signer, wasm, wasmWallet, asset_id, to_private_amount) {
+/// to_private can also using sign + signAndSend
+/// TODO: expose sign() method that return TransferPost.
+export async function to_private_by_sign(api, signer, wasm, wasmWallet, asset_id, to_private_amount) {
     console.log("to_private transaction...");
     const txJson = `{ "Mint": { "id": ${asset_id}, "value": "${to_private_amount}" }}`;
     const transaction = wasm.Transaction.from_string(txJson);
     try {
-        await sign_and_send(api, signer, wasmWallet, "", transaction);
+        await sign_and_send_without_metdata(api, signer, wasmWallet, transaction);
         console.log("📜to_private done");
     } catch (error) {
         console.error('Transaction failed', error);
     }
 }
 
+/// to_private transaction for NFT
+/// TODO: fixed amount value
 export async function to_private_nft(wasm, wasmWallet, asset_id) {
     console.log("to_private NFT transaction...");
     const txJson = `{ "Mint": { "id": ${asset_id}, "value": "${NFT_AMOUNT}" }}`;
     const transaction = wasm.Transaction.from_string(txJson);
     try {
         const res = await wasmWallet.post(transaction, null);
-        console.log("📜to_private result:" + res);
+        console.log("📜to_private NFT result:" + res);
     } catch (error) {
         console.error('Transaction failed', error);
     }
 }
 
+/// private transfer transaction
 export async function private_transfer(api, signer, wasm, wasmWallet, asset_id, private_transfer_amount, to_private_address) {
     console.log("private_transfer transaction of asset_id:" + asset_id);
     const addressJson = privateAddressToJson(to_private_address);
@@ -219,6 +215,8 @@ export async function private_transfer(api, signer, wasm, wasmWallet, asset_id, 
     console.log("📜finish private transfer 1 pDOL.");
 }
 
+/// private transfer transaction for NFT
+/// TODO: fixed amount value and asset metadata
 export async function private_transfer_nft(api, signer, wasm, wasmWallet, asset_id, to_private_address) {
     console.log("private_transfer NFT transaction...");
     const addressJson = privateAddressToJson(to_private_address);
@@ -234,6 +232,8 @@ export async function private_transfer_nft(api, signer, wasm, wasmWallet, asset_
     console.log("📜finish private transfer 1 pDOL.");
 }
 
+/// to_public transaction for NFT
+/// TODO: fixed amount value and asset metadata
 export async function to_public_nft(api, signer, wasm, wasmWallet, asset_id) {
     console.log("to_public NFT transaction...");
     const txJson = `{ "Reclaim": { "id": ${asset_id}, "value": "${NFT_AMOUNT}" }}`;
@@ -244,14 +244,10 @@ export async function to_public_nft(api, signer, wasm, wasmWallet, asset_id) {
     console.log("📜finish to public transfer 1 pDOL.");
 };
 
-const sign_and_send = async (api, signer, wasm, wasmWallet, assetMetadataJson, transaction) => {
-    var posts = [];
-    if(assetMetadataJson == "") {
-        posts = await wasmWallet.sign(transaction, null);
-    } else {
-        const assetMetadata = wasm.AssetMetadata.from_string(assetMetadataJson);
-        posts = await wasmWallet.sign(transaction, assetMetadata);
-    }
+/// Using sign on wallet and using signdAndSend to polkadot.js transaction
+/// This version is using `null` asset metdata. only meaningul for to_private.
+const sign_and_send_without_metdata = async (api, signer, wasmWallet, transaction) => {
+    const posts = await wasmWallet.sign(transaction, null);
     const transactions = [];
     for (let i = 0; i < posts.length; i++) {
         const transaction = await mapPostToTransaction(posts[i], api);
@@ -267,7 +263,27 @@ const sign_and_send = async (api, signer, wasm, wasmWallet, assetMetadataJson, t
     }
 }
 
-export async function mapPostToTransaction(post, api) {
+/// Using sign on wallet and using signdAndSend to polkadot.js transaction
+const sign_and_send = async (api, signer, wasm, wasmWallet, assetMetadataJson, transaction) => {
+    const assetMetadata = wasm.AssetMetadata.from_string(assetMetadataJson);
+    const posts = await wasmWallet.sign(transaction, assetMetadata);
+    const transactions = [];
+    for (let i = 0; i < posts.length; i++) {
+        const transaction = await mapPostToTransaction(posts[i], api);
+        transactions.push(transaction);
+    }
+    const txs = await transactionsToBatches(transactions, api);
+    for (let i = 0; i < txs.length; i++) {
+        try {
+            await txs[i].signAndSend(signer, (status, events) => { });
+        } catch (error) {
+            console.error('Transaction failed', error);
+        }
+    }
+}
+
+/// inner method
+async function mapPostToTransaction(post, api) {
     post.sources = post.sources.map(source => new BN(source));
     post.sinks = post.sinks.map(sink => new BN(sink));
 
@@ -294,7 +310,7 @@ export async function mapPostToTransaction(post, api) {
     }
 };
 
-export async function transactionsToBatches(transactions, api) {
+async function transactionsToBatches(transactions, api) {
     const MAX_BATCH = 2;
     const batches = [];
     for (let i = 0; i < transactions.length; i += MAX_BATCH) {
@@ -307,7 +323,8 @@ export async function transactionsToBatches(transactions, api) {
     return batches;
 }
 
-export function print_private_balance(wasm, wasmWallet, asset_id, info) {
+/// Get private asset balance
+export function get_private_balance(wasm, wasmWallet, asset_id, info) {
     const balance = wasmWallet.balance(new wasm.AssetId(asset_id));
     console.log(`💰private asset ${asset_id} balance[${info}]:` + balance);
     return balance;
