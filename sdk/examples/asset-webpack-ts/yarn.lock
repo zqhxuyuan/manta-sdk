@@ -1725,9 +1725,9 @@ bindings@^1.3.0, bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-"bip32-ed25519@git+https://github.com/Zondax/bip32-ed25519.git":
+"bip32-ed25519@https://github.com/Zondax/bip32-ed25519":
   version "0.0.4"
-  resolved "git+https://github.com/Zondax/bip32-ed25519.git#0949df01b5c93885339bc28116690292088f6134"
+  resolved "https://github.com/Zondax/bip32-ed25519#0949df01b5c93885339bc28116690292088f6134"
   dependencies:
     bn.js "^5.1.1"
     elliptic "^6.4.1"
@@ -3944,8 +3944,10 @@ manta-wasm-wallet@1.3.1:
   resolved "https://registry.yarnpkg.com/manta-wasm-wallet/-/manta-wasm-wallet-1.3.1.tgz#d455b0b327e9063663c8404074cc1f73238aa957"
   integrity sha512-aMp2FN+qVuC5ezSg6PrLE9y2I4uTrZZ22KK/RowZ+51Cz8EmZRaOPCVLrDq8mhlT8Yr7jIDnpdxllDRD/sgdKw==
 
-"manta.js@file:../../package":
-  version "1.0.0"
+manta.js@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.npmjs.org/manta.js/-/manta.js-0.0.1.tgz#45f5a982c22cde42b1e1e4f13c8fb1f6545aa7ce"
+  integrity sha512-hHvrSKOrOkqQpWIk/qi8C0muRvnYDDJrm15VXUul5Y/oT9N1yBBmen4MZCvGfJ3rFGVtov0XjkKNEOWjZUsTJA==
   dependencies:
     "@polkadot/api" "6.8.1"
     "@polkadot/extension-dapp" "0.39.3"

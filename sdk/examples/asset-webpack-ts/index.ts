@@ -30,7 +30,7 @@ async function main() {
     console.log("END");
     */
 
-    const mantaSdk = await sdk.init(sdk.Environment.Production);
+    const mantaSdk = await sdk.init(sdk.Environment.Development);
 
     const privateAddress = await mantaSdk.privateAddress();
     console.log("The private address is: ", privateAddress);
@@ -40,7 +40,7 @@ async function main() {
     const amount = 1000000000000000000; // 1 unit
     const asset_id = 1; // DOL
 
-    await mantaSdk.toPrivateSign(asset_id,amount);
+    // await mantaSdk.toPrivateSign(asset_id,amount);
 
     await mantaSdk.walletSync();
 
