@@ -36,18 +36,24 @@ async function main() {
     console.log("The private address is: ", privateAddress);
 
     await mantaSdk.initalWalletSync();
-    
+
     const amount = 1000000000000000000; // 1 unit
     const asset_id = 1; // DOL
 
-    // await mantaSdk.toPrivateSign(asset_id,amount);
+    let privateBalance = await mantaSdk.privateBalance(asset_id);
+    console.log("Private balance after initialize sync: ", privateBalance);
+
+    await mantaSdk.toPrivatePost(asset_id,amount);
+    // await mantaSdk.privateTransfer(asset_id, amount, to_private_address);
+    // await mantaSdk.toPublic(asset_id,amount);
 
     await mantaSdk.walletSync();
 
-    let privateBalance = await mantaSdk.privateBalance(asset_id);
+    privateBalance = await mantaSdk.privateBalance(asset_id);
     console.log("Private balance after first sync: ", privateBalance);
 
-    setTimeout(function () { }, 5000);
+    // setTimeout(function () { }, 5000);
+    await mantaSdk.walletSync();
 
     privateBalance = await mantaSdk.privateBalance(asset_id);
     console.log("Private balance after second sync: ", privateBalance);
